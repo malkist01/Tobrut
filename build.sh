@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 #
 SECONDS=0
-ZIPNAME="Neophyte-Helios-Q-Ginkgo-$(TZ=Asia/Jakarta date +"%Y%m%d-%H%M").zip"
+ZIPNAME="Neophyte-Artemis-Q-Ginkgo-$(TZ=Asia/Jakarta date +"%Y%m%d-%H%M").zip"
 TC_DIR="$(pwd)/../tc/"
 CLANG_DIR="${TC_DIR}clang"
 GCC_64_DIR="${TC_DIR}aarch64-linux-android-4.9"
 GCC_32_DIR="${TC_DIR}arm-linux-androideabi-4.9"
-AK3_DIR="$HOME/AnyKernel3"
+AK3_DIR="$(pwd)/AnyKernel3"
 DEFCONFIG="vendor/ginkgo_defconfig"
 
 # ===== Set timezone =====
-sudo timedatectl set-timezone Asia/Jakarta
+export TZ=Asia/Jakarta
 
 # ===== TELEGRAM CONFIG =====
 BOT_TOKEN="8338188311:AAFgWEjptCCroGaaYd9oSLgGMNeu_D0pip0"
