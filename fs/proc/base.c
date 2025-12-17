@@ -1104,7 +1104,9 @@ err_unlock:
 	put_task_struct(task);
 	/* These apps burn through CPU in the background. Don't let them. */
 	if (!err && oom_adj >= 700) {
-		if (!strcmp(task_comm, "id.GoogleCamera")) {
+		if (!strcmp(task_comm, "id.GoogleCamera") ||
+		    !strcmp(task_comm, "musical.ly") ||
+		    !strcmp(task_comm, "tiktok")) {
 			struct task_kill_info *kinfo;
 
 			kinfo = kmalloc(sizeof(*kinfo), GFP_KERNEL);
