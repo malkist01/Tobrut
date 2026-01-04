@@ -112,7 +112,7 @@ unsigned int sysctl_sched_cstate_aware = 1;
  *
  * (default SCHED_TUNABLESCALING_LOG = *(1+ilog(ncpus))
  */
-enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_LINEAR;
+enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_LOG;
 
 /*
  * Minimal preemption granularity for CPU-bound tasks:
@@ -2976,6 +2976,8 @@ static u32 __accumulate_pelt_segments(u64 periods, u32 d1, u32 d3)
 
 	return c1 + c2 + c3;
 }
+
+#define cap_scale(v, s) ((v)*(s) >> SCHED_CAPACITY_SHIFT)
 
 /*
  * Accumulate the three separate parts of the sum; d1 the remainder
@@ -6828,20 +6830,12 @@ boosted_cpu_util(int cpu, struct sched_walt_cpu_load *walt_load)
 static inline unsigned long
 boosted_task_util(struct task_struct *task)
 {
-#ifdef CONFIG_UCLAMP_TASK_GROUP
-	unsigned long util = task_util_est(task);
-	unsigned long util_min = uclamp_eff_value(task, UCLAMP_MIN);
-	unsigned long util_max = uclamp_eff_value(task, UCLAMP_MAX);
-
-	return clamp(util, util_min, util_max);
-#else
 	unsigned long util = task_util_est(task);
 	long margin = schedtune_task_margin(task);
 
 	trace_sched_boost_task(task, util, margin);
 
 	return util + margin;
-#endif
 }
 
 static unsigned long cpu_util_without(int cpu, struct task_struct *p);
@@ -7605,10 +7599,6 @@ static inline int find_best_target(struct task_struct *p, int *backup_cpu,
 				continue;
 
 			if (fbt_env->skip_cpu == i)
-				continue;
-
-			/* Skip CPUs which do not fit task requirements */
-			if (capacity_of(i) < boosted_task_util(p))
 				continue;
 
 			/*
@@ -9429,7 +9419,7 @@ redo:
 		 */
 		if (((cpu_rq(env->src_cpu)->nr_running > 2) ||
 			(env->flags & LBF_IGNORE_BIG_TASKS)) &&
-			((load >> env->sd->nr_balance_failed) > env->imbalance))
+			((load / 2) > env->imbalance))
 			goto next;
 
 		detach_task(p, env);
@@ -10448,7 +10438,9 @@ static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
 	if (sched_asym_prefer(busiest_cpu, env->dst_cpu))
 		return 0;
 
-	env->imbalance = sds->busiest_stat.group_load;
+	env->imbalance = DIV_ROUND_CLOSEST(
+		sds->busiest_stat.avg_load * sds->busiest_stat.group_capacity,
+		SCHED_CAPACITY_SCALE);
 
 	return 1;
 }
@@ -10843,9 +10835,6 @@ static struct rq *find_busiest_queue(struct lb_env *env,
 		if (rt > env->fbq_type)
 			continue;
 
-		if (!rq->cfs.h_nr_running)
-			continue;
-
 		/*
 		 * For ASYM_CPUCAPACITY domains with misfit tasks we simply
 		 * seek the "biggest" misfit task.
@@ -10917,25 +10906,21 @@ static struct rq *find_busiest_queue(struct lb_env *env,
 #define MAX_PINNED_INTERVAL	512
 #define NEED_ACTIVE_BALANCE_THRESHOLD 10
 
-static inline bool
-asym_active_balance(struct lb_env *env)
-{
-	/*
-	 * ASYM_PACKING needs to force migrate tasks from busy but
-	 * lower priority CPUs in order to pack all tasks in the
-	 * highest priority CPUs.
-	 */
-	return env->idle != CPU_NOT_IDLE && (env->sd->flags & SD_ASYM_PACKING) &&
-	       sched_asym_prefer(env->dst_cpu, env->src_cpu);
-}
-
-static inline bool
-voluntary_active_balance(struct lb_env *env)
+static int need_active_balance(struct lb_env *env)
 {
 	struct sched_domain *sd = env->sd;
 
-	if (asym_active_balance(env))
-		return 1;
+	if (env->idle == CPU_NEWLY_IDLE) {
+
+		/*
+		 * ASYM_PACKING needs to force migrate tasks from busy but
+		 * lower priority CPUs in order to pack all tasks in the
+		 * highest priority CPUs.
+		 */
+		if ((sd->flags & SD_ASYM_PACKING) &&
+		    sched_asym_prefer(env->dst_cpu, env->src_cpu))
+			return 1;
+	}
 
 	/*
 	 * The dst_cpu is idle and the src_cpu CPU has only 1 CFS task.
@@ -10968,16 +10953,6 @@ voluntary_active_balance(struct lb_env *env)
 
 	if (env->src_grp_type == group_overloaded &&
 	    env->src_rq->misfit_task_load)
-		return 1;
-
-	return 0;
-}
-
-static int need_active_balance(struct lb_env *env)
-{
-	struct sched_domain *sd = env->sd;
-
-	if (voluntary_active_balance(env))
 		return 1;
 
 	return unlikely(sd->nr_balance_failed > sd->cache_nice_tries+2);
@@ -11287,7 +11262,7 @@ no_move:
 	} else
 		sd->nr_balance_failed = 0;
 
-	if (likely(!active_balance) || voluntary_active_balance(&env)) {
+	if (likely(!active_balance)) {
 		/* We were unbalanced, so reset the balancing interval */
 		sd->balance_interval = sd->min_interval;
 	} else {
@@ -11363,15 +11338,6 @@ get_sd_balance_interval(struct sched_domain *sd, int cpu_busy)
 
 	/* scale ms to jiffies */
 	interval = msecs_to_jiffies(interval);
-
-	/*
-	 * Reduce likelihood of busy balancing at higher domains racing with
-	 * balancing at lower domains by preventing their balancing periods
-	 * from being multiples of each other.
-	 */
-	if (cpu_busy)
-		interval -= 1;
-
 	interval = clamp(interval, 1UL, max_load_balance_interval);
 
 	/*
@@ -12798,10 +12764,6 @@ const struct sched_class fair_sched_class = {
 #ifdef CONFIG_SCHED_WALT
 	.fixup_walt_sched_stats	= walt_fixup_sched_stats_fair,
 #endif
-
-#ifdef CONFIG_UCLAMP_TASK
-	.uclamp_enabled		= 1,
-#endif
 };
 
 #ifdef CONFIG_SCHED_DEBUG
@@ -12966,7 +12928,7 @@ static void walt_fixup_nr_big_tasks(struct rq *rq, struct task_struct *p,
 	if (!se)
 		walt_adjust_nr_big_tasks(rq, delta, inc);
 }
-#ifdef CONFIG_SCHED_WALT
+
 /*
  * Check if task is part of a hierarchy where some cfs_rq does not have any
  * runtime left.
@@ -12993,7 +12955,6 @@ static int task_will_be_throttled(struct task_struct *p)
 
 	return 0;
 }
-#endif /* bye walt */
 
 #else /* CONFIG_CFS_BANDWIDTH */
 
@@ -13010,12 +12971,11 @@ static void walt_fixup_nr_big_tasks(struct rq *rq, struct task_struct *p,
 {
 	walt_adjust_nr_big_tasks(rq, delta, inc);
 }
-#ifdef CONFIG_SCHED_WALT
+
 static int task_will_be_throttled(struct task_struct *p)
 {
 	return false;
 }
-#endif /* bye walt */
 
 #endif /* CONFIG_CFS_BANDWIDTH */
 
@@ -13075,7 +13035,6 @@ void walt_rotate_work_init(void)
 	}
 }
 
-#ifdef CONFIG_SCHED_WALT
 #define WALT_ROTATION_THRESHOLD_NS	16000000
 static void walt_check_for_rotation(struct rq *src_rq)
 {
@@ -13210,7 +13169,5 @@ void check_for_migration(struct rq *rq, struct task_struct *p)
 		raw_spin_unlock(&migration_lock);
 	}
 }
-
-#endif /* bye walt */
 
 #endif /* CONFIG_SCHED_WALT */
