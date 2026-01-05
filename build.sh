@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 SECONDS=0
-ZIPNAME="Neophyte-Hermes-Ginkgo-$(TZ=Asia/Jakarta date +"%Y%m%d-%H%M").zip"
+ZIPNAME="NabillaLaurens-$(TZ=Asia/Jakarta date +"%Y%m%d-%H%M").zip"
 TC_DIR="$(pwd)/../tc/"
 CLANG_DIR="${TC_DIR}clang"
 GCC_64_DIR="${TC_DIR}aarch64-linux-android-4.9"
@@ -13,8 +13,8 @@ DEFCONFIG="vendor/ginkgo_defconfig"
 export TZ=Asia/Jakarta;
 
 # ===== TELEGRAM CONFIG =====
-BOT_TOKEN="8338188311:AAFgWEjptCCroGaaYd9oSLgGMNeu_D0pip0"
-CHAT_ID="-1002001516627"
+BOT_TOKEN="7868194496:AAGY7WwRRbeCOPYOnczoCPh2psC43Q0F3JI"
+CHAT_ID="-1002287610863"
 API_URL="https://api.telegram.org/bot${BOT_TOKEN}"
 
 tg_msg() {
@@ -100,7 +100,7 @@ Zipping kernel..."
 if [ -d "$AK3_DIR" ]; then
 cp -r $AK3_DIR AnyKernel3
 else
-git clone -q https://github.com/neophyteprjkt/AnyKernel3 || {
+git clone -q https://github.com/malkist01/AnyKernel2 || {
 tg_msg "❌ Failed cloning AnyKernel3"
 }
 fi
