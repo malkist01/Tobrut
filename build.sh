@@ -100,7 +100,7 @@ Zipping kernel..."
 if [ -d "$AK3_DIR" ]; then
 cp -r $AK3_DIR AnyKernel3
 else
-git clone -q https://github.com/malkist01/AnyKernel2 || {
+git clone -q https://github.com/neophyteprjkt/AnyKernel3 || {
 tg_msg "❌ Failed cloning AnyKernel3"
 }
 fi
