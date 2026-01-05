@@ -13,8 +13,8 @@ DEFCONFIG="vendor/ginkgo_defconfig"
 export TZ=Asia/Jakarta;
 
 # ===== TELEGRAM CONFIG =====
-BOT_TOKEN="8338188311:AAFgWEjptCCroGaaYd9oSLgGMNeu_D0pip0"
-CHAT_ID="-1002001516627"
+BOT_TOKEN="7868194496:AAGY7WwRRbeCOPYOnczoCPh2psC43Q0F3JI"
+CHAT_ID="-1002287610863"
 API_URL="https://api.telegram.org/bot${BOT_TOKEN}"
 
 tg_msg() {
