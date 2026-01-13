@@ -45,7 +45,7 @@ Time: <code>$(date)</code>"
 # ===== CLANG =====
 if ! [ -d "${CLANG_DIR}" ]; then
 tg_msg "⚙️ Cloning Clang..."
-git clone --depth=1 https://gitlab.com/nekoprjkt/aosp-clang ${CLANG_DIR} || {
+git clone --depth=1 https://git.codelinaro.org/clo/la/kernel_platform/prebuilts/build-tools/clang-r563880c ${CLANG_DIR} || {
 tg_msg "❌ <b>Failed cloning Clang</b>"
 }
 fi
