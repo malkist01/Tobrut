@@ -45,7 +45,7 @@ Time: <code>$(date)</code>"
 # ===== CLANG =====
 if ! [ -d "${CLANG_DIR}" ]; then
 tg_msg "⚙️ Cloning Clang..."
-git clone --depth=1 https://gitea.com/ihsanulrahman/aosp-clang-22 ${CLANG_DIR} || {
+git clone --depth=1 https://gitea.com/ihsanulrahman/aosp-clang-21 ${CLANG_DIR} || {
 tg_msg "❌ <b>Failed cloning Clang</b>"
 }
 fi
