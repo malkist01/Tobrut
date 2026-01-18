@@ -57,7 +57,7 @@ echo -e "\n$red[!] AOSP-clang Dir Not Found!!!\033[0m \n"
 sleep 2
 echo -e "$green[+] Wait.. Cloning AOSP-clang...\033[0m \n"
 sleep 2
-wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/4d2864f08ff2c290563fb903a5156e0504620bbe/clang-r563880c.tar.gz -O "aosp-clang.tar.gz"
+wget -q https://github.com/ZyCromerZ/Clang/releases/download/23.0.0git-20260118-release/Clang-23.0.0git-20260118.tar.gz -O "aosp-clang.tar.gz"
     rm -rf $COMPILERDIR 
     mkdir $COMPILERDIR 
     tar -xvf aosp-clang.tar.gz -C $COMPILERDIR
