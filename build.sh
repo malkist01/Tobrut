@@ -113,14 +113,6 @@ MAKE="./makeparallel"
    make -j$(nproc --all) \
     O=out \
     ARCH=arm64 \
-    LLVM=1 \
-    LLVM_IAS=1 \
-    AR=llvm-ar \
-    NM=llvm-nm \
-    LD=ld.lld \
-    OBJCOPY=llvm-objcopy \
-    OBJDUMP=llvm-objdump \
-    STRIP=llvm-strip \
     CC=clang \
     CROSS_COMPILE=aarch64-linux-gnu- \
     CROSS_COMPILE_ARM32=arm-linux-gnueabi- 2>&1 | tee log.txt
