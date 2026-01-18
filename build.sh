@@ -57,7 +57,7 @@ echo -e "\n$red[!] AOSP-clang Dir Not Found!!!\033[0m \n"
 sleep 2
 echo -e "$green[+] Wait.. Cloning AOSP-clang...\033[0m \n"
 sleep 2
-wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/4d2864f08ff2c290563fb903a5156e0504620bbe/clang-r563880c.tar.gz -O "aosp-clang.tar.gz"
+wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/4d2864f08ff2c290563fb903a5156e0504620bbe/clang-r563880c.tar.gz -O "aosp-clang.tar.gz"
     rm -rf $COMPILERDIR 
     mkdir $COMPILERDIR 
     tar -xvf aosp-clang.tar.gz -C $COMPILERDIR
@@ -128,20 +128,21 @@ MAKE="./makeparallel"
     # Zipping
 
     if [ -f out/arch/arm64/boot/Image ] ; then
+            finderr
             echo -e "$green=============================================\033[0m"
             echo -e "$green= [+] Zipping up ...\033[0m"
             echo -e "$green=============================================\033[0m"
     if [ -d "$AK3_DIR" ]; then
-            cp -r $AK3_DIR AnyKernel3
+            cp -r $AK3_DIR AnyKernel2
         elif ! git clone -q https://github.com/malkist01/AnyKernel2.git -b main; then
-                echo -e "\nAnyKernel3 repo not found locally and couldn't clone from GitHub! Aborting..."
+                echo -e "\nAnyKernel2 repo not found locally and couldn't clone from GitHub! Aborting..."
         fi
-            cp $kernel $dtb $dtbo AnyKernel3
-            cd AnyKernel3
+            cp $kernel $dtb $dtbo AnyKernel2
+            cd AnyKernel2
             git checkout miatoll &> /dev/null
             zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
             cd ..
-            rm -rf AnyKernel3
+            rm -rf AnyKernel2
     fi
 
 
