@@ -57,7 +57,7 @@ echo -e "\n$red[!] AOSP-clang Dir Not Found!!!\033[0m \n"
 sleep 2
 echo -e "$green[+] Wait.. Cloning AOSP-clang...\033[0m \n"
 sleep 2
-wget -q https://github.com/ZyCromerZ/Clang/releases/download/23.0.0git-20260118-release/Clang-23.0.0git-20260118.tar.gz -O "aosp-clang.tar.gz"
+wget -q https://git.codelinaro.org/clo/la/kernel_platform/prebuilts/build-tools/-/archive/android-16.0.0_r4/build-tools-android-16.0.0_r4.tar.gz?ref_type=tags?path=clang-r563880c -O "aosp-clang.tar.gz"
     rm -rf $COMPILERDIR 
     mkdir $COMPILERDIR 
     tar -xvf aosp-clang.tar.gz -C $COMPILERDIR
@@ -113,6 +113,14 @@ MAKE="./makeparallel"
    make -j$(nproc --all) \
     O=out \
     ARCH=arm64 \
+    LLVM=1 \
+    LLVM_IAS=1 \
+    AR=llvm-ar \
+    NM=llvm-nm \
+    LD=ld.lld \
+    OBJCOPY=llvm-objcopy \
+    OBJDUMP=llvm-objdump \
+    STRIP=llvm-strip \
     CC=clang \
     CROSS_COMPILE=aarch64-linux-gnu- \
     CROSS_COMPILE_ARM32=arm-linux-gnueabi- 2>&1 | tee log.txt
