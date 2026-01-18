@@ -1,15 +1,15 @@
 #!/bin/sh
 # Compile script for Compiling kernel
-# Copyright (c) RapliVx Aka Rafi Aditya
+# Copyright (c) Malkist
 
 # Setup
 PHONE="Ginkgo"
 DEFCONFIG=vendor/ginkgo_defconfig
 COMPILERDIR="$(pwd)/../aosp-clang"
 CLANG="AOSP Clang"
-CODENAME="[myLove 💕]"
-ZIPNAME="Kurumi-Karnal-$CODENAME-$PHONE-$(date '+%Y%m%d-%H%M').zip"
-CAPTION="Kurumi Kernel $PHONE Compile Complete, Have A Brick Day Nihahahah"
+CODENAME="[myLove]"
+ZIPNAME="NabillaLaurens-$CODENAME-$PHONE-$(date '+%Y%m%d-%H%M').zip"
+CAPTION="NabillaLaurens Kernel $PHONE Compile Complete, Have A Brick Day"
 BOT_TOKEN="7868194496:AAGY7WwRRbeCOPYOnczoCPh2psC43Q0F3JI"
 CHAT_ID="-1002287610863"
 MESSAGE="• Build For $PHONE Started •"
@@ -27,9 +27,9 @@ red="\033[91m"
 blue="\033[94m"
 yellow="\033[93m"
 
-echo -e "$cyan===========================\033[0m"
-echo -e "$cyan= START COMPILING KERNEL  =\033[0m"
-echo -e "$cyan===========================\033[0m"
+echo -e "$pink===========================\033[0m"
+echo -e "$pink= START COMPILING KERNEL  =\033[0m"
+echo -e "$pink===========================\033[0m"
 
 echo -e "$blue...KSABAR...\033[0m"
 
@@ -46,7 +46,7 @@ echo -e -n "$yellow\033[104mPRESS ENTER TO CONTINUE\033[0m"
 read P
 echo  $P
 
-# Clone WeebX Clang
+# Clone Google Clang
 function clang() {
 if [ -d $COMPILERDIR ] ; then
 echo -e " "
@@ -139,7 +139,7 @@ MAKE="./makeparallel"
         fi
             cp $kernel $dtb $dtbo AnyKernel2
             cd AnyKernel2
-            git checkout miatoll &> /dev/null
+            git checkout ginkgo &> /dev/null
             zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
             cd ..
             rm -rf AnyKernel2
