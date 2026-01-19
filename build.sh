@@ -122,7 +122,6 @@ MAKE="./makeparallel"
     OBJDUMP=llvm-objdump \
     STRIP=llvm-strip \
     CC=clang \
-    KCFLAGS="-O3 -march=armv8.2-a+crypto+dotprod -mtune=generic -mllvm -polly -mllvm -enable-ml-inliner=release" \
     CROSS_COMPILE=aarch64-linux-gnu- \
     CROSS_COMPILE_ARM32=arm-linux-gnueabi- 2>&1 | tee log.txt
     
